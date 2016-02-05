@@ -1,5 +1,6 @@
 #! /usr/bin/env python
 # -*- coding: UTF-8 -*- #
+import os
 
 __all__ = ['ParquetDatabase']
 
@@ -38,4 +39,13 @@ class BaseDatabase(object):
 class ParquetDatabase(BaseDatabase):
     def __init__(self, name, uri, schema_index_file=None):
         super(ParquetDatabase, self).__init__(name, uri)
-        self.schema_index_file = schema_index_file or "%s*" % self.uri
+        self._schema_index_file = schema_index_file or os.path.join(self.uri,
+                                                                    '*')
+
+    @property
+    def schema_index_file(self):
+        return self._schema_index_file
+
+    @schema_index_file.setter
+    def schema_index_file(self, value):
+        self._schema_index_file = value

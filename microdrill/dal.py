@@ -7,18 +7,33 @@ from pyspark.sql import SQLContext
 __all__ = ['ParquetDAL']
 
 
-class BaseDAL(SQLContext):
-    def __init__(self, *args, **kwargs):
-        super(BaseDAL, self).__init__(*args, **kwargs)
+class BaseDAL(object):
+    def __init__(self):
         self._connections = dict()
         self._schemas = dict()
         self._databases = dict()
+        self._sql = None
 
     @property
     def databases(self):
         return self._databases
 
+    @property
+    def schemas(self):
+        return self._schemas
+
+    @property
+    def connections(self):
+        return self._connections
+
+    @property
+    def sql(self):
+        return self._sql
+
     def schema(self, name):
+        raise NotImplementedError()
+
+    def connect(self, name):
         raise NotImplementedError()
 
     def set_database(self, name, p_connection):
@@ -32,8 +47,9 @@ class BaseDAL(SQLContext):
 
 class ParquetDAL(BaseDAL):
     def __init__(self, *args, **kwargs):
-        super(ParquetDAL, self).__init__(*args, **kwargs)
+        super(ParquetDAL, self).__init__()
         self._databases = ParquetPool()
+        self._sql = SQLContext(*args, **kwargs)
 
     def _connect_for_schema(self, name):
         database = self._databases.get(name)
@@ -52,9 +68,11 @@ class ParquetDAL(BaseDAL):
 
     def connect(self, name):
         database = self._databases.get(name)
-        if database:
+        files = database.config.get('files')
+
+        if database and files:
             parquet_list = list()
-            for filename in database.config['files']:
+            for filename in files:
                 parquet_list.append("%s/%s" % (self._databases[name].uri,
                                                filename))
-            self._connections[name] = self.read.parquet(*parquet_list)
+            self._connections[name] = self._sql.read.parquet(*parquet_list)

@@ -17,7 +17,7 @@ clean:
 	@rm -rf *.egg-info dist
 
 test: clean
-	@nosetests -sd tests/ --exclude tests/spark
+	@nosetests -sd tests/ --exclude tests/spark --with-coverage --cover-package=microdrill
 
 upload: clean
 	@python setup.py -q sdist upload -r pypi
