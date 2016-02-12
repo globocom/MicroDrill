@@ -14,6 +14,10 @@ class BaseField(object):
     def name(self):
         return self._name
 
+    @property
+    def table(self):
+        return self._table
+
     def _quote(self, value):
         try:
             value = int(value)
