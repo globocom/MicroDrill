@@ -1,9 +1,9 @@
-from microdrill.database import BaseDatabase
+from microdrill.table import BaseTable
 from microdrill.pool import BasePool
 from microdrill.dal import BaseDAL
 
 
-class FakeDatabase(BaseDatabase):
+class FakeTable(BaseTable):
     pass
 
 
@@ -16,7 +16,7 @@ class FakePool(BasePool):
 class FakeDAL(BaseDAL):
     def __init__(self):
         super(FakeDAL, self).__init__()
-        self._databases = FakePool()
+        self._tables = FakePool()
 
 
 def factory_dals(dals):
@@ -24,15 +24,15 @@ def factory_dals(dals):
 
     for dal in dals:
         current_dal = FakeDAL()
-        database_name = dal['databases']['name']
-        database_uri = dal['databases']['uri']
+        table_name = dal['tables']['name']
+        table_uri = dal['tables']['uri']
 
-        database = FakeDatabase(database_name, database_uri)
-        current_dal.set_database(database_name, database)
+        table = FakeTable(table_name, table_uri)
+        current_dal.set_table(table_name, table)
         list_dals.append(current_dal)
 
     return list_dals
 
 
-def get_database_from_proxy(proxy, index_dal, database_name):
-    return proxy._dals[index_dal].databases[database_name]
+def get_table_from_proxy(proxy, index_dal, table_name):
+    return proxy._dals[index_dal].tables[table_name]

@@ -1,41 +1,41 @@
 from unittest import TestCase
-from microdrill.database import BaseDatabase, ParquetDatabase
+from microdrill.table import BaseTable, ParquetTable
 from microdrill.pool import ParquetPool
-from tests.helper import FakeDatabase, FakePool
+from tests.helper import FakeTable, FakePool
 
 
 class TestBasePool(TestCase):
 
     def setUp(self):
-        self.database = BaseDatabase('Test database', 'hdfs://...')
+        self.table = BaseTable('Test table')
         self.pool = FakePool()
 
     def test_should_set_and_get_like_a_dict(self):
-        self.pool[self.database.name] = self.database
-        self.assertEqual(self.pool.get(self.database.name), self.database)
+        self.pool[self.table.name] = self.table
+        self.assertEqual(self.pool.get(self.table.name), self.table)
 
-    def test_should_add_multiple_databases(self):
-        self.pool[self.database.name] = self.database
-        self.pool['Test database2'] = self.database
-        self.pool['Test database3'] = self.database
-        self.assertEqual(self.pool.get(self.database.name), self.database)
-        self.assertEqual(self.pool.get('Test database2'), self.database)
-        self.assertEqual(self.pool.get('Test database3'), self.database)
+    def test_should_add_multiple_tables(self):
+        self.pool[self.table.name] = self.table
+        self.pool['Test table2'] = self.table
+        self.pool['Test table3'] = self.table
+        self.assertEqual(self.pool.get(self.table.name), self.table)
+        self.assertEqual(self.pool.get('Test table2'), self.table)
+        self.assertEqual(self.pool.get('Test table3'), self.table)
         self.assertEqual(len(self.pool), 3)
 
 
 class TestParquetPool(TestCase):
 
     def setUp(self):
-        self.name, self.uri = 'Test database', 'hdfs://...'
+        self.name = 'Test table'
         self.pool = ParquetPool()
 
-    def test_should_raise_value_error_with_wrong_database(self):
-        database = FakeDatabase(self.name, self.uri)
-        self.assertRaises(ValueError, self.pool.validate, database)
+    def test_should_raise_value_error_with_wrong_table(self):
+        table = FakeTable(self.name)
+        self.assertRaises(ValueError, self.pool.validate, table)
 
-    def test_should_add_to_pool_with_right_database(self):
-        database = ParquetDatabase(self.name, self.uri)
-        self.pool[database.name] = database
-        self.assertEqual(self.pool.get(database.name), database)
+    def test_should_add_to_pool_with_right_table(self):
+        table = ParquetTable(self.name)
+        self.pool[table.name] = table
+        self.assertEqual(self.pool.get(table.name), table)
         self.assertEqual(len(self.pool), 1)

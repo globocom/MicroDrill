@@ -1,131 +1,111 @@
 import os
 import shutil
 import pandas as pd
+from pyspark import SparkContext
 from mock import patch
 from unittest import TestCase
-from microdrill.database import BaseDatabase, ParquetDatabase
-from tests.helper import FakeDatabase
+from tests.helper import FakeTable
+from microdrill.table import ParquetTable
 from microdrill.dal import BaseDAL, ParquetDAL
-from pyspark import SparkContext
+from microdrill.field import BaseField
 
 
 class TestBaseDal(TestCase):
 
     def setUp(self):
         self.dal = BaseDAL()
+        self.table = FakeTable('test_table')
 
-    def test_should_set_database_in_dal(self):
-        database = FakeDatabase('Test Database', 'hdfs://...')
-        self.dal.set_database(database.name, database)
-        self.assertEqual(self.dal.databases.get(database.name), database)
-        self.assertEqual(len(self.dal.databases), 1)
+    def test_should_set_table_in_dal(self):
+        self.dal.set_table(self.table.name, self.table)
+        self.assertEqual(self.dal.tables.get(self.table.name), self.table)
+        self.assertEqual(len(self.dal.tables), 1)
 
-    def test_should_overwrite_database_in_dal_with_same_name(self):
-        database = FakeDatabase('Test Database', 'hdfs://...')
-        database2 = FakeDatabase('Test Database', 'hdfs://...2')
-        self.dal.set_database(database.name, database)
-        self.dal.set_database(database2.name, database2)
-        self.assertEqual(self.dal.databases.get(database.name), database2)
-        self.assertEqual(len(self.dal.databases), 1)
+    def test_should_overwrite_table_in_dal_with_same_name(self):
+        table2 = FakeTable('test_table')
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.set_table(table2.name, table2)
+        self.assertEqual(self.dal.tables.get(self.table.name), table2)
+        self.assertEqual(len(self.dal.tables), 1)
 
-    def test_should_set_multiple_databases_in_dal(self):
-        database = FakeDatabase('Test Database', 'hdfs://...')
-        database2 = FakeDatabase('Test Database2', 'hdfs://...2')
-        database3 = FakeDatabase('Test Database3', 'hdfs://...3')
-        self.dal.set_database(database.name, database)
-        self.dal.set_database(database2.name, database2)
-        self.dal.set_database(database3.name, database3)
-        self.assertEqual(self.dal.databases.get(database.name), database)
-        self.assertEqual(self.dal.databases.get(database2.name), database2)
-        self.assertEqual(self.dal.databases.get(database3.name), database3)
-        self.assertEqual(len(self.dal.databases), 3)
+    def test_should_set_multiple_tables_in_dal(self):
+        table2 = FakeTable('test_table2')
+        table3 = FakeTable('test_table3')
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.set_table(table2.name, table2)
+        self.dal.set_table(table3.name, table3)
+        self.assertEqual(self.dal.tables.get(self.table.name), self.table)
+        self.assertEqual(self.dal.tables.get(table2.name), table2)
+        self.assertEqual(self.dal.tables.get(table3.name), table3)
+        self.assertEqual(len(self.dal.tables), 3)
 
-    def test_should_configure_correct_database_by_name(self):
-        database = FakeDatabase('Test Database', 'hdfs://...')
-        database2 = FakeDatabase('Test Database2', 'hdfs://...2')
-        self.dal.set_database(database.name, database)
-        self.dal.set_database(database2.name, database2)
-        self.dal.configure(database.name, make_happy='Ok')
-        self.assertEqual(database.config.get('make_happy'), 'Ok')
-        self.assertEqual(database2.config.get('make_happy'), None)
+    def test_should_configure_correct_table_by_name(self):
+        table2 = FakeTable('test_table2')
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.set_table(table2.name, table2)
+        self.dal.configure(self.table.name, make_happy='Ok')
+        self.assertEqual(self.table.config.get('make_happy'), 'Ok')
+        self.assertEqual(table2.config.get('make_happy'), None)
 
     def test_should_overwrite_configuration_when_configure_called(self):
-        database = FakeDatabase('Test Database', 'hdfs://...')
-        self.dal.set_database(database.name, database)
-        self.dal.configure(database.name, make_sad=':(')
-        self.dal.configure(database.name, make_happy=':)')
-        self.assertEqual(database.config.get('make_happy'), ':)')
-        self.assertEqual(database.config.get('make_sad'), None)
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.configure(self.table.name, make_sad=':(')
+        self.dal.configure(self.table.name, make_happy=':)')
+        self.assertEqual(self.table.config.get('make_happy'), ':)')
+        self.assertEqual(self.table.config.get('make_sad'), None)
+
+    def test_should_return_table_calling_dal(self):
+        self.dal.set_table(self.table.name, self.table)
+        self.assertIs(self.dal(self.table.name), self.table)
+
+    def test_should_return_field_calling_dal_twice(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        self.table._fields[name] = field
+        self.dal.set_table(self.table.name, self.table)
+        self.assertIs(self.dal(self.table.name)(name), field)
 
 
 class TestParquetDal(TestCase):
 
     def setUp(self):
         self.sc = SparkContext._active_spark_context
-        self.dal = ParquetDAL(self.sc)
-        self.filename = "example.parquet"
         self.dirname = os.path.dirname(os.path.abspath(__file__))
+        self.dal = ParquetDAL(self.dirname, self.sc)
+        self.filename = "example.parquet"
         self.full_path_file = os.path.join(self.dirname, self.filename)
         self.dataframe = {'A': [1], 'B': [2], 'C': [3]}
         self.df = pd.DataFrame(self.dataframe)
-        self.spark_df = self.dal.sql.createDataFrame(self.df, self.dataframe.keys())
+        self.spark_df = self.dal.sql.createDataFrame(self.df,
+                                                     self.dataframe.keys())
 
         self.spark_df.write.parquet(self.full_path_file)
 
     def test_should_get_schema_from_parquet(self):
 
-        database = ParquetDatabase('Test database', self.dirname,
-                                   schema_index_file=self.filename)
-        self.dal.set_database(database.name, database)
-        self.assertEqual(self.dal.schema(database.name), self.dataframe.keys())
+        table = ParquetTable('test_table', schema_index_file=self.filename)
+        self.dal.set_table(table.name, table)
+        self.assertEqual(table.schema(), self.dataframe.keys())
 
     @patch('microdrill.dal.SQLContext.read')
-    def test_should_not_connect_twice_on_next_get_schema_from_parquet(self, mock_df):
-        dal = ParquetDAL(self.sc)
-        database = ParquetDatabase('Test database', self.dirname,
-                                   schema_index_file=self.filename)
-        dal.set_database(database.name, database)
-        dal.schema(database.name)
+    def test_should_not_connect_twice_on_next_get_schema_from_parquet(self,
+                                                                      mock_df):
+        dal = ParquetDAL(self.dirname, self.sc)
+        table = ParquetTable('test_table', schema_index_file=self.filename)
+        dal.set_table(table.name, table)  # here get schema too
 
         self.assertTrue(mock_df.parquet.called)
         mock_df.reset_mock()
-        dal.schema(database.name)
+        table.schema()
         self.assertFalse(mock_df.parquet.called)
 
     @patch('microdrill.dal.SQLContext.read')
-    def test_should_not_connect_without_configure(self, mock_df):
-        dal = ParquetDAL(self.sc)
-        database = ParquetDatabase('Test database', self.dirname,
-                                   schema_index_file=self.filename)
-        dal.set_database(database.name, database)
-
-        dal.connect(database.name)
-        self.assertFalse(mock_df.parquet.called)
-
-    @patch('microdrill.dal.SQLContext.read')
-    def test_should_connect_with_configure(self, mock_df):
-        dal = ParquetDAL(self.sc)
-        database = ParquetDatabase('Test database', self.dirname,
-                                   schema_index_file=self.filename)
-        dal.set_database(database.name, database)
-
-        dal.configure(database.name, files=[self.filename])
-        dal.connect(database.name)
-        self.assertTrue(mock_df.parquet.called)
-
-    @patch('microdrill.dal.SQLContext.read')
-    def test_should_overwrite_connection_with_configure(self, mock_df):
-        dal = ParquetDAL(self.sc)
-        database = ParquetDatabase('Test database', self.dirname,
-                                   schema_index_file=self.filename)
-        dal.set_database(database.name, database)
-
-        dal.configure(database.name, files=[self.filename])
-        dal.connect(database.name)
-        self.assertTrue(mock_df.parquet.called)
-
+    def test_should_connect(self, mock_df):
+        dal = ParquetDAL(self.dirname, self.sc)
+        table = ParquetTable('test_table', schema_index_file=self.filename)
+        dal.set_table(table.name, table)
         mock_df.reset_mock()
-        dal.connect(database.name)
+        dal.connect(table.name)
         self.assertTrue(mock_df.parquet.called)
 
     def tearDown(self):

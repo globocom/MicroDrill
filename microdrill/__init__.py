@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 # -*- coding: UTF-8 -*- #
 
-from database import *
+from table import *
 from dal import *
-from proxy import *

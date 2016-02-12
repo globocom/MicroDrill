@@ -10,69 +10,59 @@ __all__ = ['ParquetDAL']
 class BaseDAL(object):
     def __init__(self):
         self._connections = dict()
-        self._schemas = dict()
-        self._databases = dict()
+        self._tables = dict()
         self._sql = None
+        self._uri = None
 
     @property
-    def databases(self):
-        return self._databases
-
-    @property
-    def schemas(self):
-        return self._schemas
-
-    @property
-    def connections(self):
-        return self._connections
+    def tables(self):
+        return self._tables
 
     @property
     def sql(self):
         return self._sql
 
-    def schema(self, name):
+    def connect(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def connect(self, name):
-        raise NotImplementedError()
+    def __call__(self, table_name):
+        return self._tables.get(table_name)
 
-    def set_database(self, name, p_connection):
-        self._databases[name] = p_connection
+    def set_table(self, name, table_obj):
+        self._tables[name] = table_obj
 
     def configure(self, name, **params):
-        database = self._databases.get(name)
-        if database:
-            database.config = params
+        table = self._tables.get(name)
+        if table:
+            table.config = params
 
 
 class ParquetDAL(BaseDAL):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, uri, *args, **kwargs):
         super(ParquetDAL, self).__init__()
-        self._databases = ParquetPool()
+        self._tables = ParquetPool()
+        self._uri = uri
         self._sql = SQLContext(*args, **kwargs)
 
+    def set_table(self, name, table_obj):
+        super(ParquetDAL, self).set_table(name, table_obj)
+        table_obj.connection = self._connect_for_schema(name)
+
     def _connect_for_schema(self, name):
-        database = self._databases.get(name)
-        if database:
-            self.configure(name, files=[database.schema_index_file])
-            self.connect(name)
-
-    def schema(self, name):
-        if name and not self._schemas.get(name):
-            self._connect_for_schema(name)
-            self._schemas[name] = self._connections[name].schema.names
-        return self._schemas.get(name, [])
-
-    def configure(self, name, files=list(), **params):
-        super(ParquetDAL, self).configure(name, files=files, **params)
+        table = self._tables.get(name)
+        if table:
+            table.config['files'] = [table.schema_index_file]
+            return self.connect(name)
+        raise ValueError("Table %s not found" % name)
 
     def connect(self, name):
-        database = self._databases.get(name)
-        files = database.config.get('files')
+        table = self._tables.get(name)
+        files = table.config.get('files')
 
-        if database and files:
+        if table and files:
             parquet_list = list()
             for filename in files:
-                parquet_list.append("%s/%s" % (self._databases[name].uri,
+                parquet_list.append("%s/%s" % (self._uri,
                                                filename))
-            self._connections[name] = self._sql.read.parquet(*parquet_list)
+            return self._sql.read.parquet(*parquet_list)
+        raise ValueError("Table (%s) and files needed" % name)

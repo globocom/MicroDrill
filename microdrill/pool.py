@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: UTF-8 -*- #
 
-from database import ParquetDatabase
+from table import ParquetTable
 
 __all__ = ['ParquetPool']
 
@@ -17,5 +17,5 @@ class BasePool(dict):
 
 class ParquetPool(BasePool):
     def validate(self, item):
-        if not isinstance(item, ParquetDatabase):
-            raise ValueError("Wrong database type")
+        if not isinstance(item, ParquetTable):
+            raise ValueError("Wrong table type")
