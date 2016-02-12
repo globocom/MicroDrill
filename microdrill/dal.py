@@ -3,6 +3,7 @@
 
 from pool import ParquetPool
 from pyspark.sql import SQLContext
+from query import BaseQuery
 
 __all__ = ['ParquetDAL']
 
@@ -13,6 +14,7 @@ class BaseDAL(object):
         self._tables = dict()
         self._sql = None
         self._uri = None
+        self._query = None
 
     @property
     def tables(self):
@@ -35,6 +37,20 @@ class BaseDAL(object):
         table = self._tables.get(name)
         if table:
             table.config = params
+
+    def select(self, *fields):
+        select_query = []
+        from_query = []
+
+        for field in fields:
+            field_value = "`%s`.`%s`" % (field.table.name, field.name)
+            select_query.append(field_value)
+            from_query.append(field.table.name)
+        query = BaseQuery("SELECT")
+        query += BaseQuery(", ".join(select_query))
+        query += BaseQuery("FROM")
+        query += BaseQuery(", ".join(set(from_query)))
+        return query
 
 
 class ParquetDAL(BaseDAL):
