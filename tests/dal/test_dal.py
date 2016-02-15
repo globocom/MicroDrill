@@ -89,6 +89,9 @@ class TestBaseDal(TestCase):
         expected = "SELECT `test_table`.`My_Field`, `test_table`.`My_Field2`, `test_table`.`My_Field3` FROM test_table"
         self.assertEqual(self.dal.query, expected)
 
+    def test_should_return_dal_when_call_select(self):
+        self.assertEqual(id(self.dal), id(self.dal.select()))
+
 
 class TestParquetDal(TestCase):
 
