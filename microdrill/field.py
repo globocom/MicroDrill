@@ -32,61 +32,80 @@ class BaseField(object):
             raise TypeError('It should be string or integer')
         return value
 
+    def _check_and_do_invert(self, base_query):
+        if self.invert:
+            base_query = ~base_query
+        return base_query
+
     def __eq__(self, y):
-        return BaseQuery("`%s`.`%s` = %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` = %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
             )
         )
 
     def __ne__(self, y):
-        return BaseQuery("`%s`.`%s` <> %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` <> %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
             )
         )
 
     def __gt__(self, y):
-        return BaseQuery("`%s`.`%s` > %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` > %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
             )
         )
 
     def __ge__(self, y):
-        return BaseQuery("`%s`.`%s` >= %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` >= %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
             )
         )
 
     def __lt__(self, y):
-        return BaseQuery("`%s`.`%s` < %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` < %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
             )
         )
 
     def __le__(self, y):
-        return BaseQuery("`%s`.`%s` <= %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` <= %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
+            )
+        )
+
+    def regexp(self, y):
+        return self._check_and_do_invert(
+            BaseQuery("`%s`.`%s` REGEXP %s" % (
+                self._table.name,
+                self._name,
+                self._quote(y)
+                )
             )
         )
 
     def __invert__(self):
         self._invert = True
-
-    def regexp(self, y):
-        return BaseQuery("`%s`.`%s` REGEXP %s" % (
-            self._table.name,
-            self._name,
-            self._quote(y)
-            )
-        )

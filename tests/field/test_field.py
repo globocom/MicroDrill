@@ -18,6 +18,16 @@ class TestField(TestCase):
     def test_quote_string_value(self):
         self.assertEqual(self.field._quote('bad guy'), "'bad guy'")
 
+    def test_should_decorate_adding_not_for_field_with_invert(self):
+        self.field._invert = True
+        base_query = (self.field == 2)
+        self.assertEqual(base_query.query, 'NOT (`my_table`.`my_field` = 2)')
+
+    def test_should_not_decorate_adding_not_for_field_without_invert(self):
+        base_query = (self.field == 2)
+        self.field._check_and_do_invert(base_query)
+        self.assertEqual(base_query.query, '`my_table`.`my_field` = 2')
+
 
 class TestQueryField(TestCase):
 
@@ -59,3 +69,11 @@ class TestQueryField(TestCase):
     def test_should_return_regexp_query(self):
         compare = self.field.regexp('a.*')
         self.assertEqual(compare.query, "`my_table`.`my_field` REGEXP 'a.*'")
+
+    def test_should_return_regexp_not_query(self):
+        compare = ~self.field.regexp('a.*')
+        self.assertEqual(compare.query, "NOT (`my_table`.`my_field` REGEXP 'a.*')")
+
+    def test_should_return_equal_not_query(self):
+        compare = ~self.field == 2
+        self.assertEqual(compare.query, "NOT (`my_table`.`my_field` = 2)")
