@@ -92,6 +92,33 @@ class TestBaseDal(TestCase):
     def test_should_return_dal_when_call_select(self):
         self.assertEqual(id(self.dal), id(self.dal.select()))
 
+    def test_should_return_query_for_where_fields(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        self.table._fields[name] = field
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field).where(field==1)
+        self.assertEqual(self.dal.query,
+                         "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1")
+
+    def test_should_return_query_for_where_multiple_fields(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        self.table._fields[name] = field
+        name2 = 'My_Field2'
+        field2 = BaseField(name2, self.table)
+        self.table._fields[name2] = field2
+        name3 = 'My_Field3'
+        field3 = BaseField(name3, self.table)
+        self.table._fields[name3] = field3
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field).where(~(field2 == 2) &(field3 != 1))
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE (NOT (`test_table`.`My_Field2` = 2)) AND (`test_table`.`My_Field3` <> 1)"
+        self.assertEqual(self.dal.query, expected)
+
+    def test_should_return_dal_when_call_where(self):
+        self.assertEqual(id(self.dal), id(self.dal.where()))
+
 
 class TestParquetDal(TestCase):
 

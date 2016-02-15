@@ -14,7 +14,7 @@ class BaseDAL(object):
         self._tables = dict()
         self._sql = None
         self._uri = None
-        self._query = None
+        self._query = {}
 
     @property
     def tables(self):
@@ -26,7 +26,10 @@ class BaseDAL(object):
 
     @property
     def query(self):
-        return self._query.query
+        return (
+            self._query.get('select', BaseQuery()) + 
+            self._query.get('where', BaseQuery())
+        ).query
 
     def connect(self, *args, **kwargs):
         raise NotImplementedError()
@@ -51,10 +54,21 @@ class BaseDAL(object):
             select_query.append(field_value)
             from_query.append(field.table.name)
 
-        self._query = BaseQuery("SELECT")
-        self._query += BaseQuery(", ".join(select_query))
-        self._query += BaseQuery("FROM")
-        self._query += BaseQuery(", ".join(set(from_query)))
+        query = BaseQuery("SELECT")
+        query += BaseQuery(", ".join(select_query))
+        query += BaseQuery("FROM")
+        query += BaseQuery(", ".join(set(from_query)))
+
+        self._query['select'] = query
+
+        return self
+
+    def where(self, *base_queries):
+        query = BaseQuery("WHERE")
+        for base_query in base_queries:
+            query += base_query
+
+        self._query['where'] = query
 
         return self
 

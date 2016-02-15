@@ -6,12 +6,12 @@ __all__ = ['BaseQuery']
 
 class BaseQuery(object):
 
-    def __init__(self, query):
+    def __init__(self, query=""):
         self._query = query
 
     @property
     def query(self):
-        return self._query
+        return self._query.strip()
 
     def __and__(self, y):
         return BaseQuery("(%s) AND (%s)" % (self._query, y.query))
