@@ -109,3 +109,4 @@ class BaseField(object):
 
     def __invert__(self):
         self._invert = True
+        return self

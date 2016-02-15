@@ -28,7 +28,8 @@ class BaseDAL(object):
     def query(self):
         return (
             self._query.get('select', BaseQuery()) + 
-            self._query.get('where', BaseQuery())
+            self._query.get('where', BaseQuery()) +
+            self._query.get('order_by', BaseQuery())
         ).query
 
     def connect(self, *args, **kwargs):
@@ -69,6 +70,22 @@ class BaseDAL(object):
             query += base_query
 
         self._query['where'] = query
+
+        return self
+
+    def order_by(self, *fields):
+        ordered = []
+        for field in fields:
+            order = 'ASC'
+            if field.invert:
+                order = 'DESC'
+
+            ordered.append("`%s`.`%s` %s" % (field.table.name, field.name, 
+                                             order))
+
+        query = BaseQuery("ORDER BY")
+        query += BaseQuery(", ".join(ordered))
+        self._query['order_by'] = query
 
         return self
 
