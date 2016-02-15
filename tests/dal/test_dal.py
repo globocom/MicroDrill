@@ -146,6 +146,33 @@ class TestBaseDal(TestCase):
         expected = "SELECT `test_table`.`My_Field` FROM test_table ORDER BY `test_table`.`My_Field2` DESC, `test_table`.`My_Field3` ASC"
         self.assertEqual(self.dal.query, expected)
 
+    def test_should_return_dal_when_call_group_by(self):
+        self.assertEqual(id(self.dal), id(self.dal.group_by()))
+
+    def test_should_return_query_for_group_by_fields(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        self.table._fields[name] = field
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field).group_by(field)
+        self.assertEqual(self.dal.query,
+                         "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field`")
+
+    def test_should_return_query_for_group_by_multiple_fields(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        self.table._fields[name] = field
+        name2 = 'My_Field2'
+        field2 = BaseField(name2, self.table)
+        self.table._fields[name2] = field2
+        name3 = 'My_Field3'
+        field3 = BaseField(name3, self.table)
+        self.table._fields[name3] = field3
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field).group_by(~field2, field3)
+        expected = "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field2`, `test_table`.`My_Field3`"
+        self.assertEqual(self.dal.query, expected)
+
 
 class TestParquetDal(TestCase):
 
