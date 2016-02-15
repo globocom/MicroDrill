@@ -49,6 +49,13 @@ class TestQueryField(TestCase):
         compare = self.field <= 2
         self.assertEqual(compare.query, '`my_table`.`my_field` <= 2')
 
+    def test_should_invert_field(self):
+        ~self.field
+        self.assertTrue(self.field.invert)
+
+    def test_should_not_invert_field(self):
+        self.assertFalse(self.field.invert)
+
     def test_should_return_regexp_query(self):
         compare = self.field.regexp('a.*')
         self.assertEqual(compare.query, "`my_table`.`my_field` REGEXP 'a.*'")

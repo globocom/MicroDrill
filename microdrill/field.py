@@ -9,6 +9,7 @@ class BaseField(object):
     def __init__(self, name, table_obj):
         self._name = name
         self._table = table_obj
+        self._invert = False
 
     @property
     def name(self):
@@ -17,6 +18,10 @@ class BaseField(object):
     @property
     def table(self):
         return self._table
+
+    @property
+    def invert(self):
+        return self._invert
 
     def _quote(self, value):
         try:
@@ -74,6 +79,9 @@ class BaseField(object):
             self._quote(y)
             )
         )
+
+    def __invert__(self):
+        self._invert = True
 
     def regexp(self, y):
         return BaseQuery("`%s`.`%s` REGEXP %s" % (
