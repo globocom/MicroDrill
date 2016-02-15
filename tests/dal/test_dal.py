@@ -70,8 +70,8 @@ class TestBaseDal(TestCase):
         field = BaseField(name, self.table)
         self.table._fields[name] = field
         self.dal.set_table(self.table.name, self.table)
-        base_query = self.dal.select(field)
-        self.assertEqual(base_query.query,
+        self.dal.select(field)
+        self.assertEqual(self.dal.query,
                          "SELECT `test_table`.`My_Field` FROM test_table")
 
     def test_should_return_query_for_select_multiple_fields(self):
@@ -85,10 +85,9 @@ class TestBaseDal(TestCase):
         field3 = BaseField(name3, self.table)
         self.table._fields[name3] = field3
         self.dal.set_table(self.table.name, self.table)
-        base_query = self.dal.select(field, field2, field3)
+        self.dal.select(field, field2, field3)
         expected = "SELECT `test_table`.`My_Field`, `test_table`.`My_Field2`, `test_table`.`My_Field3` FROM test_table"
-        self.assertEqual(base_query.query,
-                         expected)
+        self.assertEqual(self.dal.query, expected)
 
 
 class TestParquetDal(TestCase):

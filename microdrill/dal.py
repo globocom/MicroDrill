@@ -24,6 +24,10 @@ class BaseDAL(object):
     def sql(self):
         return self._sql
 
+    @property
+    def query(self):
+        return self._query.query
+
     def connect(self, *args, **kwargs):
         raise NotImplementedError()
 
@@ -46,11 +50,13 @@ class BaseDAL(object):
             field_value = "`%s`.`%s`" % (field.table.name, field.name)
             select_query.append(field_value)
             from_query.append(field.table.name)
-        query = BaseQuery("SELECT")
-        query += BaseQuery(", ".join(select_query))
-        query += BaseQuery("FROM")
-        query += BaseQuery(", ".join(set(from_query)))
-        return query
+
+        self._query = BaseQuery("SELECT")
+        self._query += BaseQuery(", ".join(select_query))
+        self._query += BaseQuery("FROM")
+        self._query += BaseQuery(", ".join(set(from_query)))
+
+        return self
 
 
 class ParquetDAL(BaseDAL):
