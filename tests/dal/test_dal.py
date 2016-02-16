@@ -2,12 +2,14 @@ import os
 import shutil
 import pandas as pd
 from pyspark import SparkContext
+from collections import OrderedDict
 from mock import patch
 from unittest import TestCase
 from tests.helper import FakeTable
 from microdrill.table import ParquetTable
 from microdrill.dal import BaseDAL, ParquetDAL
 from microdrill.field import BaseField
+from microdrill.query import BaseQuery
 
 
 class TestBaseDal(TestCase):
@@ -73,6 +75,14 @@ class TestBaseDal(TestCase):
         self.dal.select(field)
         self.assertEqual(self.dal.query,
                          "SELECT `test_table`.`My_Field` FROM test_table")
+
+    def test_should_return_base_query_for_select_field(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        self.table._fields[name] = field
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field)
+        self.assertIsInstance(self.dal.base_query, BaseQuery)
 
     def test_should_return_query_for_select_multiple_fields(self):
         name = 'My_Field'
@@ -182,7 +192,7 @@ class TestParquetDal(TestCase):
         self.dal = ParquetDAL(self.dirname, self.sc)
         self.filename = "example.parquet"
         self.full_path_file = os.path.join(self.dirname, self.filename)
-        self.dataframe = {'A': [1], 'B': [2], 'C': [3]}
+        self.dataframe = OrderedDict([('A', [1]), ('B', [2]), ('C', [3])])
         self.df = pd.DataFrame(self.dataframe)
         self.spark_df = self.dal.sql.createDataFrame(self.df,
                                                      self.dataframe.keys())
@@ -215,6 +225,25 @@ class TestParquetDal(TestCase):
         mock_df.reset_mock()
         dal.connect(table.name)
         self.assertTrue(mock_df.parquet.called)
+
+    def test_should_connect_and_execute_query(self):
+        table = ParquetTable('test_table', schema_index_file=self.filename)
+        self.dal.set_table(table.name, table)
+
+        result = self.dal.select(table('A')).execute()
+
+        self.assertIsInstance(result, pd.core.frame.DataFrame)
+        self.assertEqual(1, result.values[0][0])
+
+    def test_should_connect_and_execute_query_with_multiple_fields(self):
+        table = ParquetTable('test_table', schema_index_file=self.filename)
+        self.dal.set_table(table.name, table)
+
+        result = self.dal.select(table('A'), table('B'), table('C')).execute()
+
+        self.assertEqual(1, result.values[0][0])
+        self.assertEqual(2, result.values[0][1])
+        self.assertEqual(3, result.values[0][2])
 
     def tearDown(self):
         shutil.rmtree(self.full_path_file)

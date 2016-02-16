@@ -28,6 +28,7 @@ class BaseTable(object):
     @connection.setter
     def connection(self, db_conn):
         self._connection = db_conn
+        self._schema = self.schema()
 
     @property
     def name(self):

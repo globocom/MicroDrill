@@ -26,18 +26,25 @@ class BaseDAL(object):
 
     @property
     def query(self):
+        return self.base_query.query
+
+    @property
+    def base_query(self):
         return (
-            self._query.get('select', BaseQuery()) + 
+            self._query.get('select', BaseQuery()) +
             self._query.get('where', BaseQuery()) +
             self._query.get('order_by', BaseQuery()) +
             self._query.get('group_by', BaseQuery())
-        ).query
+        )
 
     def connect(self, *args, **kwargs):
         raise NotImplementedError()
 
     def __call__(self, table_name):
         return self._tables.get(table_name)
+
+    def execute(self):
+        raise NotImplementedError()
 
     def set_table(self, name, table_obj):
         self._tables[name] = table_obj
@@ -114,14 +121,20 @@ class ParquetDAL(BaseDAL):
 
     def set_table(self, name, table_obj):
         super(ParquetDAL, self).set_table(name, table_obj)
-        table_obj.connection = self._connect_for_schema(name)
+        self._connect_for_schema(name)
 
     def _connect_for_schema(self, name):
         table = self._tables.get(name)
         if table:
             table.config['files'] = [table.schema_index_file]
-            return self.connect(name)
-        raise ValueError("Table %s not found" % name)
+            table.connection = self.connect(name)
+        else:
+            raise ValueError("Table %s not found" % name)
+
+    def execute(self):
+        for field in self.base_query.fields:
+            self.connect(field.table.name).registerTempTable(field.table.name)
+        return self._sql.sql(self.query).toPandas()
 
     def connect(self, name):
         table = self._tables.get(name)
