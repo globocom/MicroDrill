@@ -134,7 +134,7 @@ class ParquetDAL(BaseDAL):
     def execute(self):
         for field in self.base_query.fields:
             self.connect(field.table.name).registerTempTable(field.table.name)
-        return self._sql.sql(self.query).toPandas()
+        return self._sql.sql(self.query)
 
     def connect(self, name):
         table = self._tables.get(name)
@@ -143,7 +143,8 @@ class ParquetDAL(BaseDAL):
         if table and files:
             parquet_list = list()
             for filename in files:
-                parquet_list.append("%s/%s" % (self._uri,
-                                               filename))
+                parquet_list.append("%s/%s/%s" % (self._uri,
+                                                  table.name,
+                                                  filename))
             return self._sql.read.parquet(*parquet_list)
         raise ValueError("Table (%s) and files needed" % name)

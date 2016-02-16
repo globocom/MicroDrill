@@ -2,6 +2,7 @@ import os
 import shutil
 import pandas as pd
 from pyspark import SparkContext
+from pyspark.sql import dataframe
 from collections import OrderedDict
 from mock import patch
 from unittest import TestCase
@@ -173,8 +174,10 @@ class TestParquetDal(TestCase):
         self.sc = SparkContext._active_spark_context
         self.dirname = os.path.dirname(os.path.abspath(__file__))
         self.dal = ParquetDAL(self.dirname, self.sc)
+        self.table_name = "test_table"
         self.filename = "example.parquet"
-        self.full_path_file = os.path.join(self.dirname, self.filename)
+        self.full_path_file = os.path.join(self.dirname, self.table_name,
+                                           self.filename)
         self.dataframe = OrderedDict([('A', [1]), ('B', [2]), ('C', [3])])
         self.df = pd.DataFrame(self.dataframe)
         self.spark_df = self.dal.sql.createDataFrame(self.df,
@@ -184,7 +187,7 @@ class TestParquetDal(TestCase):
 
     def test_should_get_schema_from_parquet(self):
 
-        table = ParquetTable('test_table', schema_index_file=self.filename)
+        table = ParquetTable(self.table_name, schema_index_file=self.filename)
         self.dal.set_table(table.name, table)
         self.assertEqual(table.schema(), self.dataframe.keys())
 
@@ -192,7 +195,7 @@ class TestParquetDal(TestCase):
     def test_should_not_connect_twice_on_next_get_schema_from_parquet(self,
                                                                       mock_df):
         dal = ParquetDAL(self.dirname, self.sc)
-        table = ParquetTable('test_table', schema_index_file=self.filename)
+        table = ParquetTable(self.table_name, schema_index_file=self.filename)
         dal.set_table(table.name, table)  # here get schema too
 
         self.assertTrue(mock_df.parquet.called)
@@ -203,30 +206,29 @@ class TestParquetDal(TestCase):
     @patch('microdrill.dal.SQLContext.read')
     def test_should_connect(self, mock_df):
         dal = ParquetDAL(self.dirname, self.sc)
-        table = ParquetTable('test_table', schema_index_file=self.filename)
+        table = ParquetTable(self.table_name, schema_index_file=self.filename)
         dal.set_table(table.name, table)
         mock_df.reset_mock()
         dal.connect(table.name)
         self.assertTrue(mock_df.parquet.called)
 
     def test_should_connect_and_execute_query(self):
-        table = ParquetTable('test_table', schema_index_file=self.filename)
+        table = ParquetTable(self.table_name, schema_index_file=self.filename)
         self.dal.set_table(table.name, table)
 
         result = self.dal.select(table('A')).execute()
 
-        self.assertIsInstance(result, pd.core.frame.DataFrame)
-        self.assertEqual(1, result.values[0][0])
+        self.assertIsInstance(result, dataframe.DataFrame)
+        self.assertEqual({'A': 1}, result.head().asDict())
 
     def test_should_connect_and_execute_query_with_multiple_fields(self):
-        table = ParquetTable('test_table', schema_index_file=self.filename)
+        table = ParquetTable(self.table_name, schema_index_file=self.filename)
         self.dal.set_table(table.name, table)
 
         result = self.dal.select(table('A'), table('B'), table('C')).execute()
 
-        self.assertEqual(1, result.values[0][0])
-        self.assertEqual(2, result.values[0][1])
-        self.assertEqual(3, result.values[0][2])
+        self.assertDictEqual({'A': 1, 'B': 2, 'C': 3},
+                             result.head().asDict())
 
     def tearDown(self):
         shutil.rmtree(self.full_path_file)

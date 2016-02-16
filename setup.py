@@ -23,8 +23,5 @@ setup(
             'tests',
         ),
     ),
-    include_package_data=True,
-    install_requires=[
-        'pandas==0.17.1',
-    ],
+    include_package_data=True
 )
