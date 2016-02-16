@@ -34,5 +34,15 @@ def factory_dals(dals):
     return list_dals
 
 
+def factory_field(table):
+    name = 'My_Field'
+    if table._fields:
+        name += '%s' % len(table._fields)
+
+    field = BaseField(name, table)
+    table._fields[name] = field
+    return field
+
+
 def get_table_from_proxy(proxy, index_dal, table_name):
     return proxy._dals[index_dal].tables[table_name]
