@@ -48,22 +48,19 @@ class BaseDAL(object):
             table.config = params
 
     def select(self, *fields):
-        select_query = []
+        self._query['select'] = self._make_query(BaseQuery("SELECT", fields)) + self._from(*fields)
+
+        return self
+
+    def _from(self, *fields):
         from_query = []
 
         for field in fields:
-            field_value = "`%s`.`%s`" % (field.table.name, field.name)
-            select_query.append(field_value)
             from_query.append(field.table.name)
 
-        query = BaseQuery("SELECT")
-        query += BaseQuery(", ".join(select_query))
-        query += BaseQuery("FROM")
+        query = BaseQuery("FROM")
         query += BaseQuery(", ".join(set(from_query)))
-
-        self._query['select'] = query
-
-        return self
+        return query
 
     def where(self, *base_queries):
         query = BaseQuery("WHERE")
@@ -75,31 +72,37 @@ class BaseDAL(object):
         return self
 
     def order_by(self, *fields):
-        ordered = []
-        for field in fields:
-            order = 'ASC'
-            if field.invert:
-                order = 'DESC'
-
-            ordered.append("`%s`.`%s` %s" % (field.table.name, field.name, 
-                                             order))
-
-        query = BaseQuery("ORDER BY")
-        query += BaseQuery(", ".join(ordered))
-        self._query['order_by'] = query
+        self._query['order_by'] = self._make_query(
+            BaseQuery("ORDER BY", fields),
+            extra_action=self._treat_order_by
+        )
 
         return self
 
     def group_by(self, *fields):
-        ordered = []
-        for field in fields:
-            ordered.append("`%s`.`%s`" % (field.table.name, field.name))
-
-        query = BaseQuery("GROUP BY")
-        query += BaseQuery(", ".join(ordered))
-        self._query['group_by'] = query
+        self._query['group_by'] = self._make_query(BaseQuery("GROUP BY", fields))
 
         return self
+
+    def _treat_order_by(self, field):
+        sql_name = field.sql('ASC')
+        if field.invert:
+            sql_name = field.sql('DESC')
+
+        return sql_name
+
+    def _make_query(self, base_query, extra_action=None):
+        query_fields = []
+        for field in base_query.fields:
+
+            sql_name = field.sql()
+            if extra_action:
+                sql_name = extra_action(field)
+
+            query_fields.append(sql_name)
+
+        base_query += BaseQuery(", ".join(query_fields))
+        return base_query
 
 
 class ParquetDAL(BaseDAL):

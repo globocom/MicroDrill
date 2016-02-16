@@ -8,7 +8,7 @@ class BaseQuery(object):
 
     def __init__(self, query="", fields=[]):
         self._query = query
-        self._fields = fields
+        self._fields = list(fields)
 
     @property
     def query(self):

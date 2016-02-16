@@ -36,6 +36,12 @@ class TestField(TestCase):
         compare = ~self.field == 2
         self.assertIs(compare.fields[0], self.field)
 
+    def test_should_return_sql(self):
+        self.assertEqual('`my_table`.`my_field`', self.field.sql())
+
+    def test_should_return_sql_with_extra_string(self):
+        self.assertEqual('`my_table`.`my_field` ASC', self.field.sql('ASC'))
+
 
 class TestQueryField(TestCase):
 

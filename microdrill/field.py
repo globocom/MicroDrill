@@ -23,6 +23,13 @@ class BaseField(object):
     def invert(self):
         return self._invert
 
+    def sql(self, extra_string=""):
+        sql = "`%s`.`%s`" % (self.table.name, self.name)
+        if extra_string:
+            sql = "%s %s" % (sql, extra_string)
+
+        return sql
+
     def _quote(self, value):
         try:
             value = int(value)
