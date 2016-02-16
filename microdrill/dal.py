@@ -32,6 +32,7 @@ class BaseDAL(object):
     def base_query(self):
         return (
             self._query.get('select', BaseQuery()) +
+            self._from() +
             self._query.get('where', BaseQuery()) +
             self._query.get('order_by', BaseQuery()) +
             self._query.get('group_by', BaseQuery())
@@ -55,18 +56,17 @@ class BaseDAL(object):
             table.config = params
 
     def select(self, *fields):
-        self._query['select'] = self._make_query(BaseQuery("SELECT", fields)) + self._from(*fields)
+        self._query['select'] = self._make_query(BaseQuery("SELECT", fields))
 
         return self
 
-    def _from(self, *fields):
-        from_query = []
-
-        for field in fields:
-            from_query.append(field.table.name)
+    def _from(self):
+        tables = []
+        for query in self._query.values():
+            tables += [field.table.name for field in query.fields]
 
         query = BaseQuery("FROM")
-        query += BaseQuery(", ".join(set(from_query)))
+        query += BaseQuery(", ".join(set(tables)))
         return query
 
     def where(self, *base_queries):

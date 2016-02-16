@@ -183,6 +183,30 @@ class TestBaseDal(TestCase):
         expected = "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field2`, `test_table`.`My_Field3`"
         self.assertEqual(self.dal.query, expected)
 
+    def test_should_append_table_in_from_using_group_by(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        table = FakeTable('test_table2')
+        name2 = 'My_Field2'
+        field2 = BaseField(name2, table)
+        self.table._fields[name] = field
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field).group_by(field2)
+
+        self.assertEqual(2, self.dal.query.count('test_table2'))
+
+    def test_should_append_table_in_from_using_where(self):
+        name = 'My_Field'
+        field = BaseField(name, self.table)
+        table = FakeTable('test_table2')
+        name2 = 'My_Field2'
+        field2 = BaseField(name2, table)
+        self.table._fields[name] = field
+        self.dal.set_table(self.table.name, self.table)
+        self.dal.select(field).where(field2 == 2)
+
+        self.assertEqual(2, self.dal.query.count('test_table2'))
+
 
 class TestParquetDal(TestCase):
 
