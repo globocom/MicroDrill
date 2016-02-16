@@ -43,7 +43,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 
@@ -53,7 +53,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 
@@ -63,7 +63,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 
@@ -73,7 +73,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 
@@ -83,7 +83,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 
@@ -93,7 +93,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 
@@ -103,7 +103,7 @@ class BaseField(object):
                 self._table.name,
                 self._name,
                 self._quote(y)
-                )
+                ), [self]
             )
         )
 

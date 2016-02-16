@@ -28,6 +28,14 @@ class TestField(TestCase):
         self.field._check_and_do_invert(base_query)
         self.assertEqual(base_query.query, '`my_table`.`my_field` = 2')
 
+    def test_should_return_base_query_with_field(self):
+        compare = self.field == 2
+        self.assertIs(compare.fields[0], self.field)
+
+    def test_should_return_base_query_with_not_field(self):
+        compare = ~self.field == 2
+        self.assertIs(compare.fields[0], self.field)
+
 
 class TestQueryField(TestCase):
 

@@ -46,3 +46,12 @@ class TestQuery(TestCase):
             compare.query,
             "(`my_table`.`my_field` = 2) OR (NOT (`my_table`.`my_field` = 'new value')) New String"
         )
+
+    def test_should_return_equal_and_equal_with_different_fields(self):
+        table = BaseTable('my_table2')
+        field = BaseField('my_field2', table)
+        compare = (self.field == 2) & (field == 'new value')
+        self.assertListEqual(
+            compare.fields,
+            [self.field, field]
+        )
