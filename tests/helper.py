@@ -1,6 +1,7 @@
 from microdrill.table import BaseTable
 from microdrill.pool import BasePool
 from microdrill.dal import BaseDAL
+from microdrill.field import BaseField
 
 
 class FakeTable(BaseTable):

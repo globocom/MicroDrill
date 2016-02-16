@@ -5,12 +5,11 @@ from pyspark import SparkContext
 from collections import OrderedDict
 from mock import patch
 from unittest import TestCase
-from tests.helper import FakeTable
+from tests.helper import FakeTable, factory_field
 from microdrill.table import ParquetTable
 from microdrill.dal import BaseDAL, ParquetDAL
 from microdrill.field import BaseField
 from microdrill.query import BaseQuery
-
 
 
 class TestBaseDal(TestCase):
@@ -157,6 +156,15 @@ class TestBaseDal(TestCase):
         self.dal.select(self.field).where(field1 == 2)
 
         self.assertEqual(2, self.dal.query.count('test_table2'))
+
+    def test_should_create_query_in_correct_order(self):
+        self.dal.group_by(self.field)
+        self.dal.order_by(self.field)
+        self.dal.where(self.field == 1)
+        self.dal.select(self.field)
+
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field`"
+        self.assertEqual(expected, self.dal.query)
 
 
 class TestParquetDal(TestCase):
