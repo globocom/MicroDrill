@@ -102,6 +102,8 @@ class TestQueryField(TestCase):
 
     def test_should_invert_field(self):
         field1 = ~self.field
+
+        self.assertNotEqual(id(self.field), id(field1))
         self.assertTrue(field1.invert)
 
     def test_should_not_invert_field(self):
