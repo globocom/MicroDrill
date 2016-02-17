@@ -157,6 +157,20 @@ class TestBaseDal(TestCase):
         expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 100"
         self.assertEqual(expected, self.dal.query)
 
+    def test_should_return_query_for_where_fields(self):
+        self.dal.select(self.field).having(self.field==1)
+
+        expected = "SELECT `test_table`.`My_Field` FROM test_table HAVING `test_table`.`My_Field` = 1"
+        self.assertEqual(expected, self.dal.query)
+
+    def test_should_return_query_for_where_multiple_fields(self):
+        field1 = factory_field(self.table)
+        field2 = factory_field(self.table)
+        self.dal.select(self.field).having(~(field1 == 2) &(field2 != 1))
+
+        expected = "SELECT `test_table`.`My_Field` FROM test_table HAVING (NOT (`test_table`.`My_Field1` = 2)) AND (`test_table`.`My_Field2` <> 1)"
+        self.assertEqual(expected, self.dal.query)
+
     def test_should_append_table_in_from_using_group_by(self):
         field1 = factory_field(FakeTable('test_table2'))
         self.dal.select(self.field).group_by(field1)

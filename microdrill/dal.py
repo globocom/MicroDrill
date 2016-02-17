@@ -36,6 +36,7 @@ class BaseDAL(object):
             self._query.get('where', BaseQuery()) +
             self._query.get('order_by', BaseQuery()) +
             self._query.get('group_by', BaseQuery()) +
+            self._query.get('having', BaseQuery()) +
             self._query.get('limit', BaseQuery())
         )
 
@@ -73,11 +74,16 @@ class BaseDAL(object):
         return query
 
     def where(self, *base_queries):
-        query = BaseQuery("WHERE")
-        for base_query in base_queries:
-            query += base_query
+        self._query['where'] = self._make_conditional_statement(
+            BaseQuery("WHERE"), base_queries
+        )
 
-        self._query['where'] = query
+        return self
+
+    def having(self, *base_queries):
+        self._query['having'] = self._make_conditional_statement(
+            BaseQuery("HAVING"), base_queries
+        )
 
         return self
 
@@ -107,6 +113,12 @@ class BaseDAL(object):
             sql_name = field.sql('DESC')
 
         return sql_name
+
+    def _make_conditional_statement(self, query, base_queries):
+        for base_query in base_queries:
+            query += base_query
+
+        return query
 
     def _make_simple_statement(self, base_query, extra_action=None):
         query_fields = []
