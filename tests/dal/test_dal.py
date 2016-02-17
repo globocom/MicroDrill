@@ -100,6 +100,12 @@ class TestSQLBaseDal(TestCase):
 
         self.assertEqual(2, self.dal.query.count('test_table2'))
 
+    def test_should_append_table_in_from_using_having(self):
+        field1 = factory_field(FakeTable('test_table2'))
+        self.dal.select(self.field).having(field1 == 2)
+
+        self.assertEqual(2, self.dal.query.count('test_table2'))
+
     def test_should_return_dal_when_call_select(self):
         self.assertEqual(id(self.dal), id(self.dal.select()))
 
@@ -111,6 +117,12 @@ class TestSQLBaseDal(TestCase):
 
     def test_should_return_dal_when_call_group_by(self):
         self.assertEqual(id(self.dal), id(self.dal.group_by()))
+
+    def test_should_return_dal_when_call_limit(self):
+        self.assertEqual(id(self.dal), id(self.dal.limit(10)))
+
+    def test_should_return_dal_when_call_having(self):
+        self.assertEqual(id(self.dal), id(self.dal.having()))
 
     def test_should_return_query_for_select_field(self):
         self.dal.select(self.field)
@@ -194,12 +206,14 @@ class TestSQLBaseDal(TestCase):
         self.assertEqual(expected, self.dal.query)
 
     def test_should_create_query_in_correct_order(self):
+        self.dal.limit(2)
         self.dal.group_by(self.field)
         self.dal.order_by(self.field)
         self.dal.where(self.field == 1)
         self.dal.select(self.field)
+        self.dal.having(self.field == 22)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field`"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field` HAVING `test_table`.`My_Field` = 22 LIMIT 2"
         self.assertEqual(expected, self.dal.query)
 
 
