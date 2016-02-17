@@ -71,8 +71,8 @@ class BaseDAL(object):
 
         return self
 
-    def limit(self, end_limit, start_limit=0):
-        query = "LIMIT %s, %s" % (start_limit, end_limit)
+    def limit(self, limit):
+        query = "LIMIT %s" % limit
         self._query['limit'] = BaseQuery(query)
 
         return self
@@ -155,8 +155,9 @@ class ParquetDAL(BaseDAL):
             raise ValueError("Table %s not found" % name)
 
     def execute(self):
-        for field in self.base_query.fields:
-            self.connect(field.table.name).registerTempTable(field.table.name)
+        for table_name in [field.table.name for field in self.base_query.fields]:
+            connect = self.connect(table_name)
+            connect.registerTempTable(table_name)
         return self._sql.sql(self.query)
 
     def connect(self, name):

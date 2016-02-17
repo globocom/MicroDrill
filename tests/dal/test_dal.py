@@ -182,12 +182,7 @@ class TestSQLBaseDal(TestCase):
     def test_should_return_query_for_limit_field(self):
         self.dal.select(self.field).limit(10)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 0, 10"
-        self.assertEqual(expected, self.dal.query)
-
-        self.dal.limit(20, 10)
-
-        expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 10, 20"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 10"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_query_for_having_fields(self):
@@ -212,7 +207,7 @@ class TestSQLBaseDal(TestCase):
         self.dal.select(self.field)
         self.dal.having(self.field == 22)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field` HAVING `test_table`.`My_Field` = 22 LIMIT 0, 2"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field` HAVING `test_table`.`My_Field` = 22 LIMIT 2"
         self.assertEqual(expected, self.dal.query)
 
 
