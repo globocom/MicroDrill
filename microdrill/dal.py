@@ -36,8 +36,7 @@ class BaseDAL(object):
             self._query.get('where', BaseQuery()) +
             self._query.get('order_by', BaseQuery()) +
             self._query.get('group_by', BaseQuery()) +
-            self._query.get('limit', BaseQuery()) +
-            BaseQuery(';')
+            self._query.get('limit', BaseQuery())
         )
 
     def connect(self, *args, **kwargs):
