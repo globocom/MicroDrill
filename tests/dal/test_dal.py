@@ -18,7 +18,6 @@ class TestBaseDal(TestCase):
     def setUp(self):
         self.dal = BaseDAL()
         self.table = FakeTable('test_table')
-        self.field = factory_field(self.table)
 
     def test_should_set_table_in_dal(self):
         self.dal.set_table(self.table.name, self.table)
@@ -69,20 +68,55 @@ class TestBaseDal(TestCase):
         self.assertIs(self.dal(self.table.name), self.table)
 
     def test_should_return_field_calling_dal_twice(self):
+        field = factory_field(self.table)
         self.dal.set_table(self.table.name, self.table)
 
-        self.assertIs(self.field, self.dal(self.table.name)('My_Field'))
+        self.assertIs(field, self.dal(self.table.name)('My_Field'))
+
+
+class TestSQLBaseDal(TestCase):
+
+    def setUp(self):
+        self.dal = BaseDAL()
+        self.table = FakeTable('test_table')
+        self.field = factory_field(self.table)
+
+    def test_should_return_base_query(self):
+        self.assertIsInstance(self.dal.base_query, BaseQuery)
+
+        self.dal.select(self.field)
+
+        self.assertIsInstance(self.dal.base_query, BaseQuery)
+
+    def test_should_append_table_in_from_using_group_by(self):
+        field1 = factory_field(FakeTable('test_table2'))
+        self.dal.select(self.field).group_by(field1)
+
+        self.assertEqual(2, self.dal.query.count('test_table2'))
+
+    def test_should_append_table_in_from_using_where(self):
+        field1 = factory_field(FakeTable('test_table2'))
+        self.dal.select(self.field).where(field1 == 2)
+
+        self.assertEqual(2, self.dal.query.count('test_table2'))
+
+    def test_should_return_dal_when_call_select(self):
+        self.assertEqual(id(self.dal), id(self.dal.select()))
+
+    def test_should_return_dal_when_call_where(self):
+        self.assertEqual(id(self.dal), id(self.dal.where()))
+
+    def test_should_return_dal_when_call_order_by(self):
+        self.assertEqual(id(self.dal), id(self.dal.order_by()))
+
+    def test_should_return_dal_when_call_group_by(self):
+        self.assertEqual(id(self.dal), id(self.dal.group_by()))
 
     def test_should_return_query_for_select_field(self):
         self.dal.select(self.field)
 
         expected = "SELECT `test_table`.`My_Field` FROM test_table"
         self.assertEqual(expected, self.dal.query)
-
-    def test_should_return_base_query_for_select_field(self):
-        self.dal.select(self.field)
-
-        self.assertIsInstance(self.dal.base_query, BaseQuery)
 
     def test_should_return_query_for_select_multiple_fields(self):
         field1 = factory_field(self.table)
@@ -91,9 +125,6 @@ class TestBaseDal(TestCase):
 
         expected = "SELECT `test_table`.`My_Field`, `test_table`.`My_Field1`, `test_table`.`My_Field2` FROM test_table"
         self.assertEqual(expected, self.dal.query)
-
-    def test_should_return_dal_when_call_select(self):
-        self.assertEqual(id(self.dal), id(self.dal.select()))
 
     def test_should_return_query_for_where_fields(self):
         self.dal.select(self.field).where(self.field==1)
@@ -109,12 +140,6 @@ class TestBaseDal(TestCase):
         expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE (NOT (`test_table`.`My_Field1` = 2)) AND (`test_table`.`My_Field2` <> 1)"
         self.assertEqual(expected, self.dal.query)
 
-    def test_should_return_dal_when_call_where(self):
-        self.assertEqual(id(self.dal), id(self.dal.where()))
-
-    def test_should_return_dal_when_call_order_by(self):
-        self.assertEqual(id(self.dal), id(self.dal.order_by()))
-
     def test_should_return_query_for_order_by_fields(self):
         self.dal.select(self.field).order_by(self.field)
 
@@ -128,9 +153,6 @@ class TestBaseDal(TestCase):
 
         expected = "SELECT `test_table`.`My_Field` FROM test_table ORDER BY `test_table`.`My_Field1` DESC, `test_table`.`My_Field2` ASC"
         self.assertEqual(expected, self.dal.query)
-
-    def test_should_return_dal_when_call_group_by(self):
-        self.assertEqual(id(self.dal), id(self.dal.group_by()))
 
     def test_should_return_query_for_group_by_fields(self):
         self.dal.select(self.field).group_by(self.field)
@@ -157,31 +179,19 @@ class TestBaseDal(TestCase):
         expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 100"
         self.assertEqual(expected, self.dal.query)
 
-    def test_should_return_query_for_where_fields(self):
+    def test_should_return_query_for_having_fields(self):
         self.dal.select(self.field).having(self.field==1)
 
         expected = "SELECT `test_table`.`My_Field` FROM test_table HAVING `test_table`.`My_Field` = 1"
         self.assertEqual(expected, self.dal.query)
 
-    def test_should_return_query_for_where_multiple_fields(self):
+    def test_should_return_query_for_having_multiple_fields(self):
         field1 = factory_field(self.table)
         field2 = factory_field(self.table)
         self.dal.select(self.field).having(~(field1 == 2) &(field2 != 1))
 
         expected = "SELECT `test_table`.`My_Field` FROM test_table HAVING (NOT (`test_table`.`My_Field1` = 2)) AND (`test_table`.`My_Field2` <> 1)"
         self.assertEqual(expected, self.dal.query)
-
-    def test_should_append_table_in_from_using_group_by(self):
-        field1 = factory_field(FakeTable('test_table2'))
-        self.dal.select(self.field).group_by(field1)
-
-        self.assertEqual(2, self.dal.query.count('test_table2'))
-
-    def test_should_append_table_in_from_using_where(self):
-        field1 = factory_field(FakeTable('test_table2'))
-        self.dal.select(self.field).where(field1 == 2)
-
-        self.assertEqual(2, self.dal.query.count('test_table2'))
 
     def test_should_create_query_in_correct_order(self):
         self.dal.group_by(self.field)
