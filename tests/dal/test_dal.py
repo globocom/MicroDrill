@@ -9,7 +9,6 @@ from unittest import TestCase
 from tests.helper import FakeTable, factory_field
 from microdrill.table import ParquetTable
 from microdrill.dal import BaseDAL, ParquetDAL
-from microdrill.field import BaseField
 from microdrill.query import BaseQuery
 
 

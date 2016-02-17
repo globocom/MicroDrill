@@ -57,7 +57,6 @@ class BaseDAL(object):
     def set_table(self, name, table_obj):
         self._tables[name] = table_obj
 
-
     def group_by(self, *fields):
         self._query['group_by'] = self._make_simple_statement(
             BaseQuery("GROUP BY", fields)
