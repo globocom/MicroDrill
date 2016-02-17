@@ -128,11 +128,12 @@ class BaseDAL(object):
         return base_query
 
     def _treat_order_by(self, field):
-        sql_name = field.sql('ASC')
-        if field.invert:
-            sql_name = field.sql('DESC')
+        sql = field.sql('%s ASC')
 
-        return sql_name
+        if field.invert:
+            sql = field.sql('%s DESC')
+
+        return sql
 
 
 class ParquetDAL(BaseDAL):

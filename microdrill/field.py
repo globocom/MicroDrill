@@ -6,10 +6,11 @@ __all__ = ['BaseField']
 
 
 class BaseField(object):
-    def __init__(self, name, table_obj):
+    def __init__(self, name, table_obj, sql_template=None, invert=False):
         self._name = name
         self._table = table_obj
-        self._invert = False
+        self._invert = invert
+        self._sql_template = sql_template
 
     @property
     def name(self):
@@ -23,10 +24,33 @@ class BaseField(object):
     def invert(self):
         return self._invert
 
-    def sql(self, extra_string=""):
+    @property
+    def avg(self):
+        return BaseField(self._name, self._table, sql_template='AVG(%s)')
+
+    @property
+    def count(self):
+        return BaseField(self._name, self._table, sql_template='COUNT(%s)')
+
+    @property
+    def sum(self):
+        return BaseField(self._name, self._table, sql_template='SUM(%s)')
+
+    @property
+    def sql_template(self):
+        return self._sql_template
+
+    @sql_template.setter
+    def sql_template(self, sql_template):
+        self._sql_template = sql_template
+
+    def sql(self, extra_template=None):
         sql = "`%s`.`%s`" % (self.table.name, self.name)
-        if extra_string:
-            sql = "%s %s" % (sql, extra_string)
+        if self.sql_template:
+            sql = self.sql_template % sql
+
+        if extra_template:
+            sql = extra_template % sql
 
         return sql
 
@@ -115,5 +139,4 @@ class BaseField(object):
         )
 
     def __invert__(self):
-        self._invert = True
-        return self
+        return BaseField(self._name, self._table, invert=True)

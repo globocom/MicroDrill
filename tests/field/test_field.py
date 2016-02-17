@@ -33,14 +33,23 @@ class TestField(TestCase):
         self.assertIs(compare.fields[0], self.field)
 
     def test_should_return_base_query_with_not_field(self):
-        compare = ~self.field == 2
-        self.assertIs(compare.fields[0], self.field)
+        field1 = ~self.field
+        compare = field1 == 2
+        self.assertIs(compare.fields[0], field1)
 
     def test_should_return_sql(self):
         self.assertEqual('`my_table`.`my_field`', self.field.sql())
 
-    def test_should_return_sql_with_extra_string(self):
-        self.assertEqual('`my_table`.`my_field` ASC', self.field.sql('ASC'))
+    def test_should_return_sql_with_sql_template(self):
+        self.field.sql_template = '%s ASC'
+        self.assertEqual('`my_table`.`my_field` ASC', self.field.sql())
+
+    def test_should_return_sql_with_extra_template(self):
+        self.assertEqual('`my_table`.`my_field` ASC', self.field.sql('%s ASC'))
+
+    def test_should_return_sql_with_sql_template_and_extra_template(self):
+        self.field.sql_template = '%s ASC'
+        self.assertEqual('`my_table`.`my_field` ASC FOOL', self.field.sql('%s FOOL'))
 
 
 class TestQueryField(TestCase):
@@ -74,8 +83,8 @@ class TestQueryField(TestCase):
         self.assertEqual(compare.query, '`my_table`.`my_field` <= 2')
 
     def test_should_invert_field(self):
-        ~self.field
-        self.assertTrue(self.field.invert)
+        field1 = ~self.field
+        self.assertTrue(field1.invert)
 
     def test_should_not_invert_field(self):
         self.assertFalse(self.field.invert)
