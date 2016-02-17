@@ -72,8 +72,9 @@ class BaseDAL(object):
 
         return self
 
-    def limit(self, limit):
-        self._query['limit'] = BaseQuery("LIMIT %s" % limit)
+    def limit(self, end_limit, start_limit=0):
+        query = "LIMIT %s, %s" % (start_limit, end_limit)
+        self._query['limit'] = BaseQuery(query)
 
         return self
 
