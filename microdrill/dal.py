@@ -57,7 +57,9 @@ class BaseDAL(object):
             table.config = params
 
     def select(self, *fields):
-        self._query['select'] = self._make_query(BaseQuery("SELECT", fields))
+        self._query['select'] = self._make_simple_statement(
+            BaseQuery("SELECT", fields)
+        )
 
         return self
 
@@ -80,7 +82,7 @@ class BaseDAL(object):
         return self
 
     def order_by(self, *fields):
-        self._query['order_by'] = self._make_query(
+        self._query['order_by'] = self._make_simple_statement(
             BaseQuery("ORDER BY", fields),
             extra_action=self._treat_order_by
         )
@@ -88,7 +90,9 @@ class BaseDAL(object):
         return self
 
     def group_by(self, *fields):
-        self._query['group_by'] = self._make_query(BaseQuery("GROUP BY", fields))
+        self._query['group_by'] = self._make_simple_statement(
+            BaseQuery("GROUP BY", fields)
+        )
 
         return self
 
@@ -104,7 +108,7 @@ class BaseDAL(object):
 
         return sql_name
 
-    def _make_query(self, base_query, extra_action=None):
+    def _make_simple_statement(self, base_query, extra_action=None):
         query_fields = []
         for field in base_query.fields:
 
