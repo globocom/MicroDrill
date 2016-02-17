@@ -51,6 +51,24 @@ class TestField(TestCase):
         self.field.sql_template = '%s ASC'
         self.assertEqual('`my_table`.`my_field` ASC FOOL', self.field.sql('%s FOOL'))
 
+    def test_should_create_new_field_with_count(self):
+        field1 = self.field.count
+
+        self.assertNotEqual(id(self.field), id(field1))
+        self.assertEqual('COUNT(`my_table`.`my_field`)', field1.sql())
+
+    def test_should_create_new_field_with_avg(self):
+        field1 = self.field.avg
+
+        self.assertNotEqual(id(self.field), id(field1))
+        self.assertEqual('AVG(`my_table`.`my_field`)', field1.sql())
+
+    def test_should_create_new_field_with_sum(self):
+        field1 = self.field.sum
+
+        self.assertNotEqual(id(self.field), id(field1))
+        self.assertEqual('SUM(`my_table`.`my_field`)', field1.sql())
+
 
 class TestQueryField(TestCase):
 

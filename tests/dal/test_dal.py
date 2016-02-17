@@ -72,27 +72,6 @@ class TestBaseDal(TestCase):
 
         self.assertIs(field, self.dal(self.table.name)('My_Field'))
 
-    def test_should_create_new_field_with_count(self):
-        field = factory_field(self.table)
-        field1 = field.count
-
-        self.assertNotEqual(id(field), id(field1))
-        self.assertEqual('COUNT(`test_table`.`My_Field`)', field1.sql())
-
-    def test_should_create_new_field_with_avg(self):
-        field = factory_field(self.table)
-        field1 = field.avg
-
-        self.assertNotEqual(id(field), id(field1))
-        self.assertEqual('AVG(`test_table`.`My_Field`)', field1.sql())
-
-    def test_should_create_new_field_with_sum(self):
-        field = factory_field(self.table)
-        field1 = field.sum
-
-        self.assertNotEqual(id(field), id(field1))
-        self.assertEqual('SUM(`test_table`.`My_Field`)', field1.sql())
-
 
 class TestSQLBaseDal(TestCase):
 
