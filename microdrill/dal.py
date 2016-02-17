@@ -158,7 +158,10 @@ class ParquetDAL(BaseDAL):
     def execute(self):
         for field in self.base_query.fields:
             self.connect(field.table.name).registerTempTable(field.table.name)
-        return self._sql.sql(self.query)
+        sql = self._sql.sql(self.query)
+        self._query = {}
+
+        return sql
 
     def connect(self, name):
         table = self._tables.get(name)
