@@ -16,17 +16,8 @@ class BaseDAL(object):
         self._uri = None
         self._query = {}
 
-    @property
-    def tables(self):
-        return self._tables
-
-    @property
-    def sql(self):
-        return self._sql
-
-    @property
-    def query(self):
-        return self.base_query.query
+    def __call__(self, table_name):
+        return self._tables.get(table_name)
 
     @property
     def base_query(self):
@@ -40,11 +31,25 @@ class BaseDAL(object):
             self._query.get('limit', BaseQuery())
         )
 
+    @property
+    def query(self):
+        return self.base_query.query
+
+    @property
+    def sql(self):
+        return self._sql
+
+    @property
+    def tables(self):
+        return self._tables
+
+    def configure(self, name, **params):
+        table = self._tables.get(name)
+        if table:
+            table.config = params
+
     def connect(self, *args, **kwargs):
         raise NotImplementedError()
-
-    def __call__(self, table_name):
-        return self._tables.get(table_name)
 
     def execute(self):
         raise NotImplementedError()
@@ -52,14 +57,44 @@ class BaseDAL(object):
     def set_table(self, name, table_obj):
         self._tables[name] = table_obj
 
-    def configure(self, name, **params):
-        table = self._tables.get(name)
-        if table:
-            table.config = params
+
+    def group_by(self, *fields):
+        self._query['group_by'] = self._make_simple_statement(
+            BaseQuery("GROUP BY", fields)
+        )
+
+        return self
+
+    def having(self, *base_queries):
+        self._query['having'] = self._make_conditional_statement(
+            BaseQuery("HAVING"), base_queries
+        )
+
+        return self
+
+    def limit(self, limit):
+        self._query['limit'] = BaseQuery("LIMIT %s" % limit)
+
+        return self
+
+    def order_by(self, *fields):
+        self._query['order_by'] = self._make_simple_statement(
+            BaseQuery("ORDER BY", fields),
+            extra_action=self._treat_order_by
+        )
+
+        return self
 
     def select(self, *fields):
         self._query['select'] = self._make_simple_statement(
             BaseQuery("SELECT", fields)
+        )
+
+        return self
+
+    def where(self, *base_queries):
+        self._query['where'] = self._make_conditional_statement(
+            BaseQuery("WHERE"), base_queries
         )
 
         return self
@@ -72,47 +107,6 @@ class BaseDAL(object):
         query = BaseQuery("FROM")
         query += BaseQuery(", ".join(set(tables)))
         return query
-
-    def where(self, *base_queries):
-        self._query['where'] = self._make_conditional_statement(
-            BaseQuery("WHERE"), base_queries
-        )
-
-        return self
-
-    def having(self, *base_queries):
-        self._query['having'] = self._make_conditional_statement(
-            BaseQuery("HAVING"), base_queries
-        )
-
-        return self
-
-    def order_by(self, *fields):
-        self._query['order_by'] = self._make_simple_statement(
-            BaseQuery("ORDER BY", fields),
-            extra_action=self._treat_order_by
-        )
-
-        return self
-
-    def group_by(self, *fields):
-        self._query['group_by'] = self._make_simple_statement(
-            BaseQuery("GROUP BY", fields)
-        )
-
-        return self
-
-    def limit(self, limit):
-        self._query['limit'] = BaseQuery("LIMIT %s" % limit)
-
-        return self        
-
-    def _treat_order_by(self, field):
-        sql_name = field.sql('ASC')
-        if field.invert:
-            sql_name = field.sql('DESC')
-
-        return sql_name
 
     def _make_conditional_statement(self, query, base_queries):
         for base_query in base_queries:
@@ -132,6 +126,13 @@ class BaseDAL(object):
 
         base_query += BaseQuery(", ".join(query_fields))
         return base_query
+
+    def _treat_order_by(self, field):
+        sql_name = field.sql('ASC')
+        if field.invert:
+            sql_name = field.sql('DESC')
+
+        return sql_name
 
 
 class ParquetDAL(BaseDAL):
