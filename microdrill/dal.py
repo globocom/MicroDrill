@@ -35,7 +35,9 @@ class BaseDAL(object):
             self._from() +
             self._query.get('where', BaseQuery()) +
             self._query.get('order_by', BaseQuery()) +
-            self._query.get('group_by', BaseQuery())
+            self._query.get('group_by', BaseQuery()) +
+            self._query.get('limit', BaseQuery()) +
+            BaseQuery(';')
         )
 
     def connect(self, *args, **kwargs):
@@ -90,6 +92,11 @@ class BaseDAL(object):
         self._query['group_by'] = self._make_query(BaseQuery("GROUP BY", fields))
 
         return self
+
+    def limit(self, limit):
+        self._query['limit'] = BaseQuery("LIMIT %s" % limit)
+
+        return self        
 
     def _treat_order_by(self, field):
         sql_name = field.sql('ASC')

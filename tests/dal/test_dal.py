@@ -76,7 +76,7 @@ class TestBaseDal(TestCase):
     def test_should_return_query_for_select_field(self):
         self.dal.select(self.field)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_base_query_for_select_field(self):
@@ -89,7 +89,7 @@ class TestBaseDal(TestCase):
         field2 = factory_field(self.table)
         self.dal.select(self.field, field1, field2)
 
-        expected = "SELECT `test_table`.`My_Field`, `test_table`.`My_Field1`, `test_table`.`My_Field2` FROM test_table"
+        expected = "SELECT `test_table`.`My_Field`, `test_table`.`My_Field1`, `test_table`.`My_Field2` FROM test_table ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_dal_when_call_select(self):
@@ -98,7 +98,7 @@ class TestBaseDal(TestCase):
     def test_should_return_query_for_where_fields(self):
         self.dal.select(self.field).where(self.field==1)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_query_for_where_multiple_fields(self):
@@ -106,7 +106,7 @@ class TestBaseDal(TestCase):
         field2 = factory_field(self.table)
         self.dal.select(self.field).where(~(field1 == 2) &(field2 != 1))
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE (NOT (`test_table`.`My_Field1` = 2)) AND (`test_table`.`My_Field2` <> 1)"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE (NOT (`test_table`.`My_Field1` = 2)) AND (`test_table`.`My_Field2` <> 1) ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_dal_when_call_where(self):
@@ -118,7 +118,7 @@ class TestBaseDal(TestCase):
     def test_should_return_query_for_order_by_fields(self):
         self.dal.select(self.field).order_by(self.field)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table ORDER BY `test_table`.`My_Field` ASC"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table ORDER BY `test_table`.`My_Field` ASC ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_query_for_order_by_multiple_fields(self):
@@ -126,7 +126,7 @@ class TestBaseDal(TestCase):
         field2 = factory_field(self.table)
         self.dal.select(self.field).order_by(~field1, field2)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table ORDER BY `test_table`.`My_Field1` DESC, `test_table`.`My_Field2` ASC"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table ORDER BY `test_table`.`My_Field1` DESC, `test_table`.`My_Field2` ASC ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_dal_when_call_group_by(self):
@@ -135,7 +135,7 @@ class TestBaseDal(TestCase):
     def test_should_return_query_for_group_by_fields(self):
         self.dal.select(self.field).group_by(self.field)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field`"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field` ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_return_query_for_group_by_multiple_fields(self):
@@ -143,7 +143,18 @@ class TestBaseDal(TestCase):
         field2 = factory_field(self.table)
         self.dal.select(self.field).group_by(~field1, field2)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field1`, `test_table`.`My_Field2`"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table GROUP BY `test_table`.`My_Field1`, `test_table`.`My_Field2` ;"
+        self.assertEqual(expected, self.dal.query)
+
+    def test_should_return_query_for_limit_field(self):
+        self.dal.select(self.field).limit(10)
+
+        expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 10 ;"
+        self.assertEqual(expected, self.dal.query)
+
+        self.dal.select(self.field).limit(100)
+
+        expected = "SELECT `test_table`.`My_Field` FROM test_table LIMIT 100 ;"
         self.assertEqual(expected, self.dal.query)
 
     def test_should_append_table_in_from_using_group_by(self):
@@ -164,7 +175,7 @@ class TestBaseDal(TestCase):
         self.dal.where(self.field == 1)
         self.dal.select(self.field)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field`"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field` ;"
         self.assertEqual(expected, self.dal.query)
 
 
