@@ -273,5 +273,15 @@ class TestParquetDal(TestCase):
         self.assertDictEqual({'A': 1, 'B': 2, 'C': 3},
                              result.head().asDict())
 
+    def test_should_reset_query_when_execute(self):
+        table = ParquetTable(self.table_name, schema_index_file=self.filename)
+        self.dal.set_table(table.name, table)
+
+        self.dal.select(table('A'), table('B'), table('C'))
+        query_select = self.dal._query['select']
+        self.dal.execute()
+
+        self.assertNotEqual(id(query_select), id(self.dal._query.get('select')))
+
     def tearDown(self):
         shutil.rmtree(self.full_path_file)

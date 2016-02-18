@@ -128,11 +128,12 @@ class BaseDAL(object):
         return base_query
 
     def _treat_order_by(self, field):
-        sql_name = field.sql('ASC')
-        if field.invert:
-            sql_name = field.sql('DESC')
+        sql = field.sql('%s ASC')
 
-        return sql_name
+        if field.invert:
+            sql = field.sql('%s DESC')
+
+        return sql
 
 
 class ParquetDAL(BaseDAL):
@@ -155,10 +156,13 @@ class ParquetDAL(BaseDAL):
             raise ValueError("Table %s not found" % name)
 
     def execute(self):
+
         for table_name in [field.table.name for field in self.base_query.fields]:
-            connect = self.connect(table_name)
-            connect.registerTempTable(table_name)
-        return self._sql.sql(self.query)
+            self.connect(table_name).registerTempTable(table_name)
+        result = self._sql.sql(self.query)
+        self._query = {}
+
+        return result
 
     def connect(self, name):
         table = self._tables.get(name)
