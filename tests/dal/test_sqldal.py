@@ -142,5 +142,5 @@ class TestSQLDAL(TestCase):
         self.dal.select(self.field)
         self.dal.having(self.field == 22)
 
-        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 ORDER BY `test_table`.`My_Field` ASC GROUP BY `test_table`.`My_Field` HAVING `test_table`.`My_Field` = 22 LIMIT 2"
+        expected = "SELECT `test_table`.`My_Field` FROM test_table WHERE `test_table`.`My_Field` = 1 GROUP BY `test_table`.`My_Field` HAVING `test_table`.`My_Field` = 22 ORDER BY `test_table`.`My_Field` ASC LIMIT 2"
         self.assertEqual(expected, self.dal.query)

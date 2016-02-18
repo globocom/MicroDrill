@@ -16,9 +16,9 @@ class SQLDAL(BaseDAL):
             self._query.get('select', BaseQuery()) +
             self._from() +
             self._query.get('where', BaseQuery()) +
-            self._query.get('order_by', BaseQuery()) +
             self._query.get('group_by', BaseQuery()) +
             self._query.get('having', BaseQuery()) +
+            self._query.get('order_by', BaseQuery()) +
             self._query.get('limit', BaseQuery())
         )
 
