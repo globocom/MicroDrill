@@ -60,7 +60,7 @@ class BaseField(object):
         except ValueError:
             value = "'%s'" % value
         except TypeError:
-            raise TypeError('It should be string or integer')
+            raise TypeError('It should be string or integer, type %s found' % type(value))
         return value
 
     def _check_and_do_invert(self, base_query):
