@@ -12,7 +12,7 @@ class BaseDAL(object):
     def __init__(self):
         self._connections = dict()
         self._tables = dict()
-        self._sql = None
+        self._context = None
         self._uri = None
         self._query = {}
 
@@ -36,8 +36,8 @@ class BaseDAL(object):
         return self.base_query.query
 
     @property
-    def sql(self):
-        return self._sql
+    def context(self):
+        return self._context
 
     @property
     def tables(self):
@@ -141,7 +141,7 @@ class ParquetDAL(BaseDAL):
         super(ParquetDAL, self).__init__()
         self._tables = ParquetPool()
         self._uri = uri
-        self._sql = SQLContext(*args, **kwargs)
+        self._context = SQLContext(*args, **kwargs)
 
     def set_table(self, name, table_obj):
         super(ParquetDAL, self).set_table(name, table_obj)
@@ -159,20 +159,20 @@ class ParquetDAL(BaseDAL):
 
         for table_name in [field.table.name for field in self.base_query.fields]:
             self.connect(table_name).registerTempTable(table_name)
-        result = self._sql.sql(self.query)
+        result = self._context.sql(self.query)
         self._query = {}
 
         return result
 
     def connect(self, name):
         table = self._tables.get(name)
-        files = table.config.get('files')
 
-        if table and files:
+        if table and table.config.get('files'):
+            files = table.config.get('files')
             parquet_list = list()
             for filename in files:
                 parquet_list.append("%s/%s/%s" % (self._uri,
                                                   table.name,
                                                   filename))
-            return self._sql.read.parquet(*parquet_list)
+            return self._context.read.parquet(*parquet_list)
         raise ValueError("Table (%s) and files needed" % name)
