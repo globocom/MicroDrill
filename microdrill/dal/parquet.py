@@ -13,9 +13,9 @@ class ParquetDAL(SQLDAL):
         self._uri = uri
         self._context = SQLContext(*args, **kwargs)
 
-    def set_table(self, name, table_obj):
-        super(ParquetDAL, self).set_table(name, table_obj)
-        self._connect_for_schema(name)
+    def set_table(self, table_obj):
+        super(ParquetDAL, self).set_table(table_obj)
+        self._connect_for_schema(table_obj.name)
 
     def _connect_for_schema(self, name):
         table = self._tables.get(name)

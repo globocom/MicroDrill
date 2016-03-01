@@ -29,7 +29,7 @@ def factory_dals(dals):
         table_uri = dal['tables']['uri']
 
         table = FakeTable(table_name, table_uri)
-        current_dal.set_table(table_name, table)
+        current_dal.set_table(table)
         list_dals.append(current_dal)
 
     return list_dals

@@ -35,14 +35,14 @@ class TestParquetDal(TestCase):
     def test_should_get_schema_from_parquet(self):
 
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        self.dal.set_table(table.name, table)
+        self.dal.set_table(table)
         self.assertEqual(table.schema(), self.dataframe.keys())
 
     def test_should_get_schema_from_parquet_with_schema_setter(self):
 
         table = ParquetTable(self.table_name)
         table.schema_index_file = self.filename
-        self.dal.set_table(table.name, table)
+        self.dal.set_table(table)
         self.assertEqual(table.schema(), self.dataframe.keys())
 
     @patch('microdrill.dal.parquet.SQLContext.read')
@@ -50,7 +50,7 @@ class TestParquetDal(TestCase):
                                                                       mock_df):
         dal = ParquetDAL(self.dirname, self.sc)
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        dal.set_table(table.name, table)  # here get schema too
+        dal.set_table(table)  # here it gets schema too
 
         self.assertTrue(mock_df.parquet.called)
         mock_df.reset_mock()
@@ -61,7 +61,7 @@ class TestParquetDal(TestCase):
     def test_should_connect(self, mock_df):
         dal = ParquetDAL(self.dirname, self.sc)
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        dal.set_table(table.name, table)
+        dal.set_table(table)
         mock_df.reset_mock()
         dal.connect(table.name)
         self.assertTrue(mock_df.parquet.called)
@@ -70,12 +70,12 @@ class TestParquetDal(TestCase):
     def test_should_raise_error_connecting_to_not_found_table(self, mock_df):
         dal = ParquetDAL(self.dirname, self.sc)
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        dal.set_table(table.name, table)
+        dal.set_table(table)
         self.assertRaises(ValueError, dal.connect, 'not_found_table')
 
     def test_should_connect_and_execute_query(self):
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        self.dal.set_table(table.name, table)
+        self.dal.set_table(table)
 
         result = self.dal.select(table('A')).execute()
 
@@ -84,7 +84,7 @@ class TestParquetDal(TestCase):
 
     def test_should_connect_and_execute_query_with_multiple_fields(self):
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        self.dal.set_table(table.name, table)
+        self.dal.set_table(table)
 
         result = self.dal.select(table('A'), table('B'), table('C')).execute()
 
@@ -93,7 +93,7 @@ class TestParquetDal(TestCase):
 
     def test_should_reset_query_when_execute(self):
         table = ParquetTable(self.table_name, schema_index_file=self.filename)
-        self.dal.set_table(table.name, table)
+        self.dal.set_table(table)
 
         self.dal.select(table('A'), table('B'), table('C'))
         query_select = self.dal._query['select']

@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='microdrill',
-    version='0.0.2',
+    version='0.0.3',
     description="Simple Apache Drill alternative using PySpark",
     long_description=open('README.rst').read(),
     keywords='apache drill client parquet hbase pyspark',

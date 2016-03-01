@@ -31,5 +31,5 @@ class BaseDAL(object):
     def execute(self):
         raise NotImplementedError()
 
-    def set_table(self, name, table_obj):
-        self._tables[name] = table_obj
+    def set_table(self, table_obj):
+        self._tables[table_obj.name] = table_obj

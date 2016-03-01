@@ -4,6 +4,8 @@ Simple `Apache Drill
 <https://drill.apache.org/docs/>`_
 alternative using `PySpark
 <https://spark.apache.org/docs/1.6.0/api/python/index.html>`_
+inspired by `PyDAL
+<https://github.com/web2py/pydal>`_
 
 
 Setup
@@ -38,7 +40,7 @@ Connecting in tables
 _____________________
 | ``parquet_conn = ParquetDAL(file_uri, sc)``
 | ``parquet_table = ParquetTable(table_name, schema_index_file=file_name)``
-| ``parquet_conn.set_table(table_name, parquet_table)``
+| ``parquet_conn.set_table(parquet_table)``
 
 Queries
 _______
@@ -83,4 +85,3 @@ Returning Field Names From Schema
 Developers
 ==========
 Install latest jdk and run in terminal ``make setup``
-
