@@ -1,0 +1,14 @@
+0.0.3
+-----
+- Changing set_table contract
+- More tests and bugfixes
+
+0.0.2
+-----
+- ReadMe
+
+0.0.1
+-----
+- Supporting Hadoop execution in files (parquet)
+- Generating sql inspired by PyDAL
+- Tested in Spark 1.6
