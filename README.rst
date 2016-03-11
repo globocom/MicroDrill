@@ -54,6 +54,7 @@ Returning Field Object
 
 Basic Query
 ***********
+| ``parquet_conn.select().where(field_object=value)`` for select all
 | ``parquet_conn.select(field_object, [field_object2, ...]).where(field_object=value)``
 | ``parquet_conn.select(field_object1, field_object2).where(field_object1==value1 & ~field_object2==value2)``
 | ``parquet_conn.select(field_object1, field_object2).where(field_object1!=value1 | field_object1.regexp(reg_exp))``

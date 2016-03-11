@@ -55,10 +55,12 @@ class SQLDAL(BaseDAL):
         return self
 
     def select(self, *fields):
-        self._query['select'] = self._make_simple_statement(
-            BaseQuery("SELECT", fields)
-        )
-
+        if fields:
+            self._query['select'] = self._make_simple_statement(
+                BaseQuery("SELECT", fields)
+            )
+        else:
+            self._query['select'] = BaseQuery("SELECT *")
         return self
 
     def where(self, *base_queries):

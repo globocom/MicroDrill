@@ -64,6 +64,12 @@ class TestSQLDAL(TestCase):
         expected = "SELECT `test_table`.`My_Field` FROM test_table"
         self.assertEqual(expected, self.dal.query)
 
+    def test_should_return_query_for_select_all_field(self):
+        self.dal.select()
+
+        expected = "SELECT * FROM"
+        self.assertEqual(expected, self.dal.query)
+
     def test_should_return_query_for_select_multiple_fields(self):
         field1 = factory_field(self.table)
         field2 = factory_field(self.table)
